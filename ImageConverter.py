@@ -9,7 +9,8 @@ def convertImage(file):
 
     if(file[-3:] == "png"):
         im = Image.open(file)
-        im.save('out1.png')
+        im.save('out.png')
+        return im
         print('File {} already a png'.format(file))
     else:
 
@@ -21,6 +22,7 @@ def convertImage(file):
 
         rgb_im = im.convert('RGB')
         rgb_im.save('out.png')
+        return rgb_im
 
 
 

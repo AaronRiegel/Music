@@ -1,29 +1,25 @@
-import numpy as np
 import matplotlib.pyplot as plt
 import cv2 as cv
 import ImageConverter as ic
 import ImageTools as it
 from BoundingBox import BoundingBox
-from pathlib import Path, PureWindowsPath
+
 import os
-
-
-
-
 
 #windows_path = PureWindowsPath(filename)
 
 
 class Main:
-    filename = "resources\\examples\\TheEntertainer.jpg"
-    ic.convertImage(filename)
-    filename = "out1.png"
+    filename = "resources/examples/Twinkle.png"
+    f = ic.convertImage(filename)
+    filename = "out.png"
     img0 = cv.imread(filename)
+    print('got to line 18')
 
     it.preprocess1(filename)
 
     img = it.preprocess(filename)
-
+    print(f'finished preprocessing {filename}')
     bars = it.preprocess('bars.png')
 
     line_spacing, line_thickness = it.get_line_info(img)

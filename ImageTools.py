@@ -1,4 +1,3 @@
-import tensorflow as tf
 import cv2
 from matplotlib import pyplot as plt
 from collections import Counter
@@ -14,8 +13,8 @@ def preprocess1(image):
     th2 = cv2.adaptiveThreshold(img,255, cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,15,-2)
     #cv2.imshow("th2", th2)
     #cv2.imwrite("th2.jpg", th2)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
 
     horizontal = th2
     vertical = th2
@@ -48,14 +47,14 @@ def preprocess1(image):
     vertical = cv2.bitwise_not(vertical)
 
     #step1
-    edges = cv2.adaptiveThreshold(vertical,255, cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,3,-2)
-
-    #step2
-    kernel = np.ones((2, 2), dtype = "uint8")
-    dilated = cv2.dilate(edges, kernel)
-    # step3
+    # edges = cv2.adaptiveThreshold(vertical,255, cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,3,-2)
+    #     #
+    #     # #step2
+    #     # kernel = np.ones((2, 2), dtype = "uint8")
+    #     # dilated = cv2.dilate(edges, kernel)
+    #     # # step3
     smooth = vertical.copy()
-    #step 4
+    #     # #step 4
     smooth = cv2.blur(smooth, (4,4))
 
     #step 5
@@ -65,6 +64,8 @@ def preprocess1(image):
     #cv2.imwrite("vertical_final.jpg", vertical)
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
+
+    print('returning vertical')
 
     return vertical
 

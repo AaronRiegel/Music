@@ -35,7 +35,7 @@ def preprocess1(image):
 
     horizontal_not = cv2.bitwise_not(horizontal)
 
-    cv2.imwrite('bars.png',horizontal_not)
+    cv2.imwrite('bars.png', horizontal_not)
     #cv2.imshow('horizontal', horizontal)
     #cv2.waitKey(0)
 
@@ -164,6 +164,8 @@ def retrieve_staff_area(img, bars, line_thickness):
 
         row_black_pixel_histogram.append(num_black_pixels)
 
+
+
     for x in range(b_rows):  # for each row in each column, check for black pixels, add at row location
         row = bars[x]
         num_black_pixels = 0
@@ -236,14 +238,15 @@ def retrieve_staff_area(img, bars, line_thickness):
 
     cartesian_end_points = list(zip(end_x_values,hits))
 
+    #plt.plot(row_black_pixel_histogram)
+    #plt.show()
 
     return cartesian_start_points, cartesian_end_points
 
 
     #print(set(x_values))
 
-    #plt.plot(row_black_pixel_histogram)
-    #plt.show()
+
     #plt.plot(bars_black_pixel_histogram)
     #plt.show()
 

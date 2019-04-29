@@ -9,20 +9,42 @@ from Resource import match
 
 import os
 
-#windows_path = PureWindowsPath(filename)
+
 
 #TODO make file system functional on macOS, Windows, and Linux
+#TODO cleanup main
 
-class Main:
 
-    def show_box(img,x1,y1,x2,y2):
-        #print(f'Generating Bounding Box')
-        cv2.imwrite('preimage.png',img)
-        im2 = cv2.rectangle(img,(x1,y1),(x2,y2),(0,0,255),thickness=1)
+def show_box(img,x1,y1,x2,y2):
+    #print(f'Generating Bounding Box')
+    cv2.imwrite('preimage.png',img)
+    im2 = cv2.rectangle(img,(x1,y1),(x2,y2),(0,0,255),thickness=1)
 
-        cv2.imwrite('box.png', im2)
+    cv2.imwrite('box.png', im2)
 
-    filename = "resources/examples/Twinkle.png"
+def match_templates(staff_img,i, note_imgs_, note_lower_, note_upper_, note_thresh, notation):
+    _boxes = Resource.locate_templates(staff_img, note_imgs_, note_lower_,
+                                      note_upper_, note_thresh)
+    _boxes = Resource.merge([j for i in _boxes for j in i], 0.5)
+
+
+    for box in _boxes:
+        box.draw(staff_img, (0, 0, 255), 1)
+        text = f"{notation}"
+        font = cv2.FONT_HERSHEY_DUPLEX
+        textsize = cv2.getTextSize(text, font, fontScale=0.255, thickness=1)[0]
+        x = int(box.getCorner()[0] - (textsize[0] // 2))
+        y = int(box.getCorner()[1] + box.getHeight() + 20)
+        cv2.putText(staff_img, text, (x, y), font, fontScale=0.25, color=(0, 0, 255), thickness=1)
+        nimage = f'qnotes{i}.png'
+        cv2.imwrite(nimage, staff_img)
+
+        sequence.append(notation)
+
+
+if __name__ == "__main__":
+
+    filename = "resources/examples/helloWorld.png"
     original_image = cv2.imread(filename)
     img1 = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
     f = ic.convertImage(filename)
@@ -81,35 +103,56 @@ class Main:
 
     #######Getting templates###########
     quarter_note_imgs, half_note_imgs, whole_note_imgs = Resource.get_notes()
+    eighth_rest_imgs, quarter_rest_imgs, half_rest_imgs, whole_rest_imgs = Resource.get_rest()
+    eighth_flag_imgs = Resource.get_flag()
+    sharp_imgs, flat_imgs = Resource.get_accidental()
+    time_imgs = Resource.get_time()
+    cleff_imgs = Resource.get_cleff()
+    bar_imgs = Resource.get_bar()
 
 
-    # TODO Add template extraction
+    sequence = []
+
     for i in range(num_staffs): #find template matches
         found_items = []
         staff_img = staffs[i]
         #print(staffs[i].shape)
         # Accidentals
+        match_templates(staff_img, i, sharp_imgs, Resource.sharp_lower, Resource.sharp_upper,
+                        Resource.sharp_thresh, 'sharp')
+        match_templates(staff_img, i, flat_imgs, Resource.flat_lower, Resource.flat_upper,
+                        Resource.flat_thresh, 'flat')
         # Barlines
+        #match_templates(staff_img, i, bar_imgs, Resource.bar_lower, Resource.bar_upper,
+                        #Resource.bar_thresh, 'barline')
         # Clef
+       # match_templates(staff_img, i, cleff_imgs, Resource.clef_lower, Resource.clef_upper,
+                        #Resource.clef_thresh, 'Cleff')
+
         # Time
+        #match_templates(staff_img, i, time_imgs, Resource.time_lower, Resource.time_upper,
+                        #Resource.time_thresh, 'Time Sign.')
+
         # Rest
+        match_templates(staff_img, i, quarter_rest_imgs, Resource.quarter_rest_lower, Resource.quarter_rest_upper,
+                        Resource.quarter_rest_thresh, '1/4r')
+
+        match_templates(staff_img, i, half_rest_imgs, Resource.half_rest_lower, Resource.half_rest_upper,
+                        Resource.half_rest_thresh, '1/2r')
+
+        match_templates(staff_img, i, whole_rest_imgs, Resource.whole_rest_lower, Resource.whole_rest_upper,
+                        Resource.whole_rest_thresh, '1/1r')
 
         # Note
-        quarter_boxes = Resource.locate_templates(staff_img, quarter_note_imgs, Resource.quarter_note_lower, Resource.quarter_note_upper, Resource.quarter_note_thresh)
-        quarter_boxes = Resource.merge([j for i in quarter_boxes for j in i], 0.5)
 
+        match_templates(staff_img, i, quarter_note_imgs, Resource.quarter_note_lower, Resource.quarter_note_upper,
+                        Resource.quarter_note_thresh, '1/4')
 
-        for box in quarter_boxes:
-            box.draw(staff_img, (0, 0, 255), 1)
-            text = "1/4 note"
-            font = cv2.FONT_HERSHEY_DUPLEX
-            textsize = cv2.getTextSize(text, font, fontScale=0.7, thickness=1)[0]
-            x = int(box.getCorner()[0] - (textsize[0] // 2))
-            y = int(box.getCorner()[1] + box.getHeight() + 20)
-            cv2.putText(staff_img, text, (x, y), font, fontScale=0.7, color=(0,0,255), thickness=1)
-            nimage = f'qnotes{i}.png'
-            cv2.imshow('lol',staff_img)
-            cv2.waitKey(0)
+        match_templates(staff_img, i, half_note_imgs, Resource.half_note_lower, Resource.half_note_upper,
+                        Resource.half_note_thresh, '1/2')
+
+        match_templates(staff_img, i, whole_note_imgs, Resource.whole_note_lower, Resource.whole_note_upper,
+                        Resource.whole_note_thresh, '1/1')
 
         # Flag
 
@@ -117,6 +160,8 @@ class Main:
 
 
     #TODO Stay positive
+
+    #print(sequence)
 
 
 

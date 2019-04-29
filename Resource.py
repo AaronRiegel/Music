@@ -23,8 +23,10 @@ accidental_paths = {
 
 note_paths = {
     'quarter': [
-        'resources/templates/note/quarter.png',
-        'resources/templates/note/solid-note.png'],
+        'resources/templates/note/solid-note.png',
+        'resources/templates/note/solid-note.png',
+        'resources/templates/note/qfull.png',
+        'resources/templates/note/qfull2.png'],
     'half': [
         'resources/templates/note/half-space.png',
         'resources/templates/note/half-note-line.png',
@@ -67,9 +69,9 @@ sharp_lower, sharp_upper, sharp_thresh = 50, 150, 0.70
 flat_lower, flat_upper, flat_thresh = 50, 150, 0.77
 
 # Notes
-quarter_note_lower, quarter_note_upper, quarter_note_thresh = 50, 150, 0.70
+quarter_note_lower, quarter_note_upper, quarter_note_thresh = 50, 150, 0.72
 half_note_lower, half_note_upper, half_note_thresh = 50, 150, 0.70
-whole_note_lower, whole_note_upper, whole_note_thresh = 50, 150, 0.7011
+whole_note_lower, whole_note_upper, whole_note_thresh = 50, 150, 0.70
 
 # Rests
 eighth_rest_lower, eighth_rest_upper, eighth_rest_thresh = 50, 150, 0.75
@@ -78,7 +80,7 @@ half_rest_lower, half_rest_upper, half_rest_thresh = 50, 150, 0.80
 whole_rest_lower, whole_rest_upper, whole_rest_thresh = 50, 150, 0.80
 
 # Eighth Flag
-eighth_flag_lower, eighth_flag_upper, eighth_flag_thresh = 50, 150, 0.8
+eighth_flag_lower, eighth_flag_upper, eighth_flag_thresh = 50, 150, 0.80
 
 # Bar line
 bar_lower, bar_upper, bar_thresh = 50, 150, 0.85
@@ -90,17 +92,20 @@ def get_cleff():
         "treble": [cv2.imread(clef_file, 0) for clef_file in clef_paths["treble"]],
         "bass": [cv2.imread(clef_file, 0) for clef_file in clef_paths["bass"]]
     }
+    return clef_imgs
 
 
 def get_time():
 
     time_imgs = {
         "common": [cv2.imread(time, 0) for time in ["resources/templates/time/common.jpg"]],
-        "44": [cv2.imread(time, 0) for time in ["resources/templates/time/44.jpg"]],
-        "34": [cv2.imread(time, 0) for time in ["resources/templates/time/34.jpg"]],
-        "24": [cv2.imread(time, 0) for time in ["resources/templates/time/24.jpg"]],
-        "68": [cv2.imread(time, 0) for time in ["resources/templates/time/68.jpg"]]
+        "4-4": [cv2.imread(time, 0) for time in ["resources/templates/time/44.jpg"]],
+        "3-4": [cv2.imread(time, 0) for time in ["resources/templates/time/34.jpg"]],
+        "2-4": [cv2.imread(time, 0) for time in ["resources/templates/time/24.jpg"]],
+        "6-8": [cv2.imread(time, 0) for time in ["resources/templates/time/68.jpg"]]
     }
+
+    return time_imgs
 
 
 def get_accidental():
@@ -145,9 +150,9 @@ def match(img, templates, start_percent, stop_percent, threshold):
     best_location_count = -1
     best_locations = []
     best_scale = 1
-    print('Matching...')
+    #print('Matching...')
 
-    img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     #print(f'image shape inside match: {img.shape}')
     #print(f'templates {templates}')
@@ -165,6 +170,7 @@ def match(img, templates, start_percent, stop_percent, threshold):
 
             template = cv2.resize(template, None, fx = scale, fy = scale, interpolation = cv2.INTER_CUBIC)
             result = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
+            #result = cv2.matchTemplate(img, template, cv2.TM_CCORR_NORMED)
             result = np.where(result >= threshold)
             location_count += len(result[0])
             locations += [result]
@@ -186,7 +192,7 @@ def match(img, templates, start_percent, stop_percent, threshold):
 
 
 def locate_templates(img, templates, start, stop, threshold):
-    print('Locating Templates...')
+    #print('Locating Templates...')
     #print(f'templates in locate: {templates}')
     locations, scale = match(img, templates, start, stop, threshold)
     img_locations = []

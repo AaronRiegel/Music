@@ -1,6 +1,6 @@
 
 class Staff(object):
-    def __init__(self, staff_matrix, line_width, line_spacing, staff_img, clef="treble", time_signature="44",):
+    def __init__(self, staff_matrix, line_width, line_spacing, staff_img, clef="treble", time_signature="44"):
         self.clef = clef
         self.time_signature = time_signature
         self.line_one = staff_matrix[0]
@@ -52,21 +52,30 @@ class Staff(object):
 
         if (note_center_y in range(self.line_one - MOE, self.line_one + MOE + 1)):
             return clef_info[self.clef][0][0]
+
         elif (note_center_y  > self.line_one + MOE and note_center_y < self.line_two - MOE):
             return clef_info[self.clef][0][1]
+
         elif (note_center_y in range(self.line_two - MOE, self.line_two + MOE + 1)):
             return clef_info[self.clef][0][2]
+
         elif (note_center_y > self.line_two + MOE and note_center_y < self.line_three - MOE):
             return clef_info[self.clef][0][3]
+
         elif (note_center_y in range(self.line_three - MOE, self.line_three + MOE + 1)):
             return clef_info[self.clef][0][4]
+
         elif (note_center_y > self.line_three + MOE and note_center_y < self.line_four-MOE):
             return clef_info[self.clef][0][5]
+
         elif (note_center_y in range(self.line_four - MOE, self.line_four + MOE + 1)):
             return clef_info[self.clef][0][6]
+
         elif (note_center_y > self.line_four + MOE and note_center_y < self.line_five-MOE):
             return clef_info[self.clef][0][7]
+
         elif (note_center_y in range(self.line_five - MOE, self.line_five + MOE + 1)):
             return clef_info[self.clef][0][8]
+
         else:
             print(f'{note_center_y} not found.')

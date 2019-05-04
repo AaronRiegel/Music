@@ -209,7 +209,7 @@ if __name__ == "__main__":
 
         # Flag
 
-        print(len(sequence))
+        # print(len(sequence))
 
         sequence.sort(key=lambda obj: obj.get_box().getCenter())
 
@@ -219,7 +219,7 @@ if __name__ == "__main__":
     for x in sequences:
         print(f'{x.get_object()} {x.get_duration()} {x.get_pitch()}')
 
-    print('got to line 218')
+
 
 
     #TODO Stay positive

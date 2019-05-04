@@ -69,7 +69,7 @@ sharp_lower, sharp_upper, sharp_thresh = 50, 150, 0.70
 flat_lower, flat_upper, flat_thresh = 50, 150, 0.77
 
 # Notes
-quarter_note_lower, quarter_note_upper, quarter_note_thresh = 50, 150, 0.72
+quarter_note_lower, quarter_note_upper, quarter_note_thresh = 50, 150, 0.80
 half_note_lower, half_note_upper, half_note_thresh = 50, 150, 0.70
 whole_note_lower, whole_note_upper, whole_note_thresh = 50, 150, 0.70
 

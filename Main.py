@@ -6,6 +6,7 @@ from BoundingBox import BoundingBox
 from MusicObject import MusicObject
 import Resource
 from Resource import match
+from Staff import Staff
 
 import os
 
@@ -22,7 +23,7 @@ def show_box(img,x1,y1,x2,y2):
 
     cv2.imwrite('box.png', im2)
 
-def match_templates(staff_img,i, note_imgs_, note_lower_, note_upper_, note_thresh, notation):
+def match_templates(staff_img, staff, i, note_imgs_, note_lower_, note_upper_, note_thresh, notation):
     _boxes = Resource.locate_templates(staff_img, note_imgs_, note_lower_,
                                       note_upper_, note_thresh)
     _boxes = Resource.merge([j for i in _boxes for j in i], 0.5)
@@ -36,6 +37,9 @@ def match_templates(staff_img,i, note_imgs_, note_lower_, note_upper_, note_thre
         x = int(box.getCorner()[0] - (textsize[0] // 2))
         y = int(box.getCorner()[1] + box.getHeight() + 20)
         cv2.putText(staff_img, text, (x, y), font, fontScale=0.25, color=(0, 0, 255), thickness=1)
+        y_center = box.getCenter()
+        # print(f'x_center {int(round(y_center[0]))} y_center {int(round(y_center[1]))}')
+        pitch = staff.get_pitch(int(round((y_center)[1])))
         nimage = f'qnotes{i}.png'
         cv2.imwrite(nimage, staff_img)
 
@@ -69,7 +73,9 @@ if __name__ == "__main__":
 
     start, end = it.retrieve_staff_area(img, bars, line_thickness)
 
-    #print(f'{start}\n{end}')
+    num_staffs = len(start) // 5
+
+    # print(f'{start}\n{end}')
 
     #staffs = []
     #half_dist_between_staffs = (all_staffline_vertical_indices[1][0][0] - all_staffline_vertical_indices[0][4][line_thickness - 1]) // 2
@@ -80,25 +86,43 @@ if __name__ == "__main__":
 
     end_val = 4
     begin_val = 0
-    staffs = []
+    cropped = []
 
-    expand_border = 10
+    expand_border = 10 # OUTER BORDER FOR CROPPED IMAGE
 
     for i in range(0, len(start)//5):
         show_box(img0, start[begin_val][0]-expand_border, start[begin_val][1]-expand_border, end[end_val][0]+expand_border, end[end_val][1] + expand_border)
         crop_img = img0[start[begin_val][1]-expand_border:end[end_val][1]+expand_border, start[begin_val][0]+expand_border:end[end_val][0]+expand_border]
+
         #plt.imshow(crop_img)
         #plt.show()
         name = f'cropped{i}.png'
-        staffs.append(crop_img)
+
+        cropped.append(crop_img)
         cv2.imwrite(name, crop_img)
         end_val += 5
         begin_val += 5
 
+    staff_matrices = []
+    staffs = []
 
-    num_staffs = len(start)//5
+    for i in range(len(start)):
+        staff_matrices.append(start[i][1]-start[0][1]+expand_border)
 
-    print(f'Number of staffs: {num_staffs}')
+    # print(f'staff_matrices: {staff_matrices}')
+    count = 0
+    for i in range(len(cropped)):
+        staff = Staff(staff_matrices[:count+5], line_thickness, line_spacing, cropped[i])
+        print(f'creating staff {i}')
+        staffs.append(staff)
+        count += 5;
+
+    for i in staffs:
+        print(f'{i.line_one}\n{i.line_two}\n{i.line_three}\n{i.line_four}\n{i.line_five}')
+
+
+
+    # print(f'Number of staffs: {num_staffs}')
 
 
     #######Getting templates###########
@@ -111,6 +135,7 @@ if __name__ == "__main__":
     bar_imgs = Resource.get_bar()
 
 
+
     sequence = []
 
     for i in range(num_staffs): #find template matches
@@ -118,9 +143,9 @@ if __name__ == "__main__":
         staff_img = staffs[i]
         #print(staffs[i].shape)
         # Accidentals
-        match_templates(staff_img, i, sharp_imgs, Resource.sharp_lower, Resource.sharp_upper,
+        match_templates(cropped[i], staff_img, i, sharp_imgs, Resource.sharp_lower, Resource.sharp_upper,
                         Resource.sharp_thresh, 'sharp')
-        match_templates(staff_img, i, flat_imgs, Resource.flat_lower, Resource.flat_upper,
+        match_templates(cropped[i], staff_img, i, flat_imgs, Resource.flat_lower, Resource.flat_upper,
                         Resource.flat_thresh, 'flat')
         # Barlines
         #match_templates(staff_img, i, bar_imgs, Resource.bar_lower, Resource.bar_upper,
@@ -134,24 +159,24 @@ if __name__ == "__main__":
                         #Resource.time_thresh, 'Time Sign.')
 
         # Rest
-        match_templates(staff_img, i, quarter_rest_imgs, Resource.quarter_rest_lower, Resource.quarter_rest_upper,
+        match_templates(cropped[i],staff_img, i, quarter_rest_imgs, Resource.quarter_rest_lower, Resource.quarter_rest_upper,
                         Resource.quarter_rest_thresh, '1/4r')
 
-        match_templates(staff_img, i, half_rest_imgs, Resource.half_rest_lower, Resource.half_rest_upper,
+        match_templates(cropped[i],staff_img, i, half_rest_imgs, Resource.half_rest_lower, Resource.half_rest_upper,
                         Resource.half_rest_thresh, '1/2r')
 
-        match_templates(staff_img, i, whole_rest_imgs, Resource.whole_rest_lower, Resource.whole_rest_upper,
+        match_templates(cropped[i],staff_img, i, whole_rest_imgs, Resource.whole_rest_lower, Resource.whole_rest_upper,
                         Resource.whole_rest_thresh, '1/1r')
 
         # Note
 
-        match_templates(staff_img, i, quarter_note_imgs, Resource.quarter_note_lower, Resource.quarter_note_upper,
+        match_templates(cropped[i],staff_img, i, quarter_note_imgs, Resource.quarter_note_lower, Resource.quarter_note_upper,
                         Resource.quarter_note_thresh, '1/4')
 
-        match_templates(staff_img, i, half_note_imgs, Resource.half_note_lower, Resource.half_note_upper,
+        match_templates(cropped[i],staff_img, i, half_note_imgs, Resource.half_note_lower, Resource.half_note_upper,
                         Resource.half_note_thresh, '1/2')
 
-        match_templates(staff_img, i, whole_note_imgs, Resource.whole_note_lower, Resource.whole_note_upper,
+        match_templates(cropped[i],staff_img, i, whole_note_imgs, Resource.whole_note_lower, Resource.whole_note_upper,
                         Resource.whole_note_thresh, '1/1')
 
         # Flag

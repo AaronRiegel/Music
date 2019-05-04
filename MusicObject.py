@@ -5,20 +5,20 @@ class MusicObject(object):
         self.primitive = primitive
         self.box = box
 
-    def set_Pitch(self, pitch):
+    def set_pitch(self, pitch):
         self.pitch = pitch
 
-    def set_Duration(self, duration):
+    def set_duration(self, duration):
         self.duration = duration
 
-    def get_Primitive(self):
+    def get_objecu(self):
         return self.primitive
 
-    def get_Pitch(self):
+    def get_pitch(self):
         return self.pitch
 
-    def get_Duration(self):
+    def get_duration(self):
         return self.duration
 
-    def get_Box(self):
+    def get_box(self):
         return self.box

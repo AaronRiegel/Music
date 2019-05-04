@@ -59,7 +59,7 @@ barline_paths = ['resources/templates/barline/barline_1.jpg',
                  'resources/templates/barline/barline_4.jpg']
 
 # Clefs
-clef_lower, clef_upper, clef_thresh = 50, 150, 0.88
+clef_lower, clef_upper, clef_thresh = 50, 150, 0.20
 
 # Time
 time_lower, time_upper, time_thresh = 50, 150, 0.85

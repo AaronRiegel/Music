@@ -48,13 +48,8 @@ class Staff(object):
         }
         note_names = ["C", "D", "E", "F", "G", "A", "B"]
 
-        MOE = 2
+        MOE = 2 # Margin of Error
 
-        test = [10,11,12]
-
-        # Check within staff first
-        # if (note_center_y == self.line_one or note_center_y == self.line_one + MOE or
-        #         note_center_y == self.line_one - MOE):
         if (note_center_y in range(self.line_one - MOE, self.line_one + MOE + 1)):
             return clef_info[self.clef][0][0]
         elif (note_center_y  > self.line_one + MOE and note_center_y < self.line_two - MOE):

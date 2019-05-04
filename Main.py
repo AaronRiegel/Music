@@ -18,12 +18,12 @@ import os
 
 def show_box(img,x1,y1,x2,y2):
     #print(f'Generating Bounding Box')
-    cv2.imwrite('preimage.png',img)
-    im2 = cv2.rectangle(img,(x1,y1),(x2,y2),(0,0,255),thickness=1)
+    cv2.imwrite('preimage.png', img)
+    im2 = cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), thickness=1)
 
     cv2.imwrite('box.png', im2)
 
-def match_templates(staff_img, staff, i, note_imgs_, note_lower_, note_upper_, note_thresh, notation):
+def match_templates(staff_img, staff, i, note_imgs_, note_lower_, note_upper_, note_thresh, notation, duration=0):
     _boxes = Resource.locate_templates(staff_img, note_imgs_, note_lower_,
                                       note_upper_, note_thresh)
     _boxes = Resource.merge([j for i in _boxes for j in i], 0.5)
@@ -42,8 +42,31 @@ def match_templates(staff_img, staff, i, note_imgs_, note_lower_, note_upper_, n
         pitch = staff.get_pitch(int(round((y_center)[1])))
         nimage = f'qnotes{i}.png'
         cv2.imwrite(nimage, staff_img)
+        obj = MusicObject(notation,duration,box,pitch)
+        if(notation == 'sharp' or notation == 'flat'):
+            return
+        sequence.append(obj)
 
-        sequence.append(notation)
+def find_cleff(staff_img, i,clef_imgs, clef_lower, clef_upper, clef_thresh):
+    for clef in clef_imgs:
+        # print("Matching {} clef template on staff".format(clef), i + 1)
+        clef_boxes = Resource.locate_templates(staff_img, clef_imgs[clef], clef_lower, clef_upper, clef_thresh)
+        clef_boxes = Resource.merge([j for i in clef_boxes for j in i], 0.5)
+
+        if (len(clef_boxes) == 1):
+            print("Clef Found: ", clef)
+            staffs[i].setClef(clef)
+
+            # print("[INFO] Displaying Matching Results on staff", i + 1)
+            clef_boxes_img = staffs[i].getImage()
+            clef_boxes_img = clef_boxes_img.copy()
+
+            for boxes in clef_boxes:
+                boxes.draw(staff_img, (0,255,0), 1)
+                x = int(boxes.getCorner()[0] + (boxes.getWidth() // 2))
+                y = int(boxes.getCorner()[1] + boxes.getHeight() + 10)
+                cv2.putText(staff_img, "{} clef".format(clef), (x, y), cv2.FONT_HERSHEY_DUPLEX, 0.9, (0,255,0))
+
 
 
 if __name__ == "__main__":
@@ -77,9 +100,6 @@ if __name__ == "__main__":
 
     # print(f'{start}\n{end}')
 
-    #staffs = []
-    #half_dist_between_staffs = (all_staffline_vertical_indices[1][0][0] - all_staffline_vertical_indices[0][4][line_thickness - 1]) // 2
-
 
 
     box = BoundingBox(start[0][0],start[0][1], start[4][0],start[4][1])
@@ -88,7 +108,8 @@ if __name__ == "__main__":
     begin_val = 0
     cropped = []
 
-    expand_border = 10 # OUTER BORDER FOR CROPPED IMAGE
+    # **************OUTER BORDER FOR CROPPED IMAGE************
+    expand_border = 10
 
     for i in range(0, len(start)//5):
         show_box(img0, start[begin_val][0]-expand_border, start[begin_val][1]-expand_border, end[end_val][0]+expand_border, end[end_val][1] + expand_border)
@@ -113,12 +134,12 @@ if __name__ == "__main__":
     count = 0
     for i in range(len(cropped)):
         staff = Staff(staff_matrices[:count+5], line_thickness, line_spacing, cropped[i])
-        print(f'creating staff {i}')
+        # print(f'creating staff {i}')
         staffs.append(staff)
-        count += 5;
+        count += 5
 
-    for i in staffs:
-        print(f'{i.line_one}\n{i.line_two}\n{i.line_three}\n{i.line_four}\n{i.line_five}')
+    # for i in staffs:
+    #     print(f'{i.line_one}\n{i.line_two}\n{i.line_three}\n{i.line_four}\n{i.line_five}')
 
 
 
@@ -131,14 +152,30 @@ if __name__ == "__main__":
     eighth_flag_imgs = Resource.get_flag()
     sharp_imgs, flat_imgs = Resource.get_accidental()
     time_imgs = Resource.get_time()
-    cleff_imgs = Resource.get_cleff()
+    clef_imgs = Resource.get_cleff()
     bar_imgs = Resource.get_bar()
 
 
 
     sequence = []
+    sequences = []
 
-    for i in range(num_staffs): #find template matches
+    for i in range(num_staffs): # find template matches of time, cleff
+        staff_img = cropped[i]
+        find_cleff(staff_img,i,clef_imgs,Resource.clef_lower,Resource.clef_upper,Resource.clef_thresh)
+    # Barlines
+    # match_templates(staff_img, i, bar_imgs, Resource.bar_lower, Resource.bar_upper,
+    # Resource.bar_thresh, 'barline')
+    # Clef
+    # match_templates(staff_img, i, cleff_imgs, Resource.clef_lower, Resource.clef_upper,
+    # Resource.clef_thresh, 'Cleff')
+
+    # Time
+    # match_templates(staff_img, i, time_imgs, Resource.time_lower, Resource.time_upper,
+    # Resource.time_thresh, 'Time Sign.')
+
+
+    for i in range(num_staffs): # find template matches of rests and notes
         found_items = []
         staff_img = staffs[i]
         #print(staffs[i].shape)
@@ -147,41 +184,42 @@ if __name__ == "__main__":
                         Resource.sharp_thresh, 'sharp')
         match_templates(cropped[i], staff_img, i, flat_imgs, Resource.flat_lower, Resource.flat_upper,
                         Resource.flat_thresh, 'flat')
-        # Barlines
-        #match_templates(staff_img, i, bar_imgs, Resource.bar_lower, Resource.bar_upper,
-                        #Resource.bar_thresh, 'barline')
-        # Clef
-       # match_templates(staff_img, i, cleff_imgs, Resource.clef_lower, Resource.clef_upper,
-                        #Resource.clef_thresh, 'Cleff')
 
-        # Time
-        #match_templates(staff_img, i, time_imgs, Resource.time_lower, Resource.time_upper,
-                        #Resource.time_thresh, 'Time Sign.')
 
         # Rest
         match_templates(cropped[i],staff_img, i, quarter_rest_imgs, Resource.quarter_rest_lower, Resource.quarter_rest_upper,
-                        Resource.quarter_rest_thresh, '1/4r')
+                        Resource.quarter_rest_thresh, '1/4r', 1)
 
         match_templates(cropped[i],staff_img, i, half_rest_imgs, Resource.half_rest_lower, Resource.half_rest_upper,
-                        Resource.half_rest_thresh, '1/2r')
+                        Resource.half_rest_thresh, '1/2r', 2)
 
         match_templates(cropped[i],staff_img, i, whole_rest_imgs, Resource.whole_rest_lower, Resource.whole_rest_upper,
-                        Resource.whole_rest_thresh, '1/1r')
+                        Resource.whole_rest_thresh, '1/1r', 4)
 
         # Note
 
         match_templates(cropped[i],staff_img, i, quarter_note_imgs, Resource.quarter_note_lower, Resource.quarter_note_upper,
-                        Resource.quarter_note_thresh, '1/4')
+                        Resource.quarter_note_thresh, '1/4', 1)
 
         match_templates(cropped[i],staff_img, i, half_note_imgs, Resource.half_note_lower, Resource.half_note_upper,
-                        Resource.half_note_thresh, '1/2')
+                        Resource.half_note_thresh, '1/2', 2)
 
         match_templates(cropped[i],staff_img, i, whole_note_imgs, Resource.whole_note_lower, Resource.whole_note_upper,
-                        Resource.whole_note_thresh, '1/1')
+                        Resource.whole_note_thresh, '1/1', 4)
 
         # Flag
 
+        print(len(sequence))
 
+        sequence.sort(key=lambda obj: obj.get_box().getCenter())
+
+        sequences.extend(sequence)
+        sequence = []
+
+    for x in sequences:
+        print(f'{x.get_object()} {x.get_duration()} {x.get_pitch()}')
+
+    print('got to line 218')
 
 
     #TODO Stay positive

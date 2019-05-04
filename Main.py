@@ -7,6 +7,7 @@ from MusicObject import MusicObject
 import Resource
 from Resource import match
 from Staff import Staff
+from music21 import *
 
 import os
 
@@ -23,7 +24,7 @@ def show_box(img,x1,y1,x2,y2):
 
     cv2.imwrite('box.png', im2)
 
-def match_templates(staff_img, staff, i, note_imgs_, note_lower_, note_upper_, note_thresh, notation, duration=0):
+def match_templates(staff_img, staff, i, note_imgs_, note_lower_, note_upper_, note_thresh, notation, duration=0,rest=False):
     _boxes = Resource.locate_templates(staff_img, note_imgs_, note_lower_,
                                       note_upper_, note_thresh)
     _boxes = Resource.merge([j for i in _boxes for j in i], 0.5)
@@ -42,7 +43,10 @@ def match_templates(staff_img, staff, i, note_imgs_, note_lower_, note_upper_, n
         pitch = staff.get_pitch(int(round((y_center)[1])))
         nimage = f'qnotes{i}.png'
         cv2.imwrite(nimage, staff_img)
-        obj = MusicObject(notation,duration,box,pitch)
+        if(rest):
+            obj = MusicObject(notation, 'rest', duration, box, pitch)
+        else:
+            obj = MusicObject(notation, 'note', duration, box, pitch)
         if(notation == 'sharp' or notation == 'flat'):
             return
         sequence.append(obj)
@@ -67,7 +71,23 @@ def find_cleff(staff_img, i,clef_imgs, clef_lower, clef_upper, clef_thresh):
                 y = int(boxes.getCorner()[1] + boxes.getHeight() + 10)
                 cv2.putText(staff_img, "{} clef".format(clef), (x, y), cv2.FONT_HERSHEY_DUPLEX, 0.9, (0,255,0))
 
+def make_sequence(sequence=[]):
+    #TODO Fix this
+    strm = stream.Stream()
 
+    n = note.Note()
+    r = note.Rest()
+    for s in sequence:
+        if s.get_type == 'note':
+            n.duration = s.get_duration()
+            n.pitch = s.get_pitch()
+
+            strm.append(n)
+        elif s.get_type == 'rest':
+            r.duration = s.get_duration()
+            strm.append(r)
+
+    strm.show('text')
 
 if __name__ == "__main__":
 
@@ -77,7 +97,7 @@ if __name__ == "__main__":
     f = ic.convertImage(filename)
     filename = "out.png"
     img0 = cv2.imread(filename)
-    print('got to line 18')
+
 
     it.preprocess1(filename)
 
@@ -188,24 +208,24 @@ if __name__ == "__main__":
 
         # Rest
         match_templates(cropped[i],staff_img, i, quarter_rest_imgs, Resource.quarter_rest_lower, Resource.quarter_rest_upper,
-                        Resource.quarter_rest_thresh, '1/4r', 1)
+                        Resource.quarter_rest_thresh, 'quarter', 1, rest=True)
 
         match_templates(cropped[i],staff_img, i, half_rest_imgs, Resource.half_rest_lower, Resource.half_rest_upper,
-                        Resource.half_rest_thresh, '1/2r', 2)
+                        Resource.half_rest_thresh, 'half', 2, rest=True)
 
         match_templates(cropped[i],staff_img, i, whole_rest_imgs, Resource.whole_rest_lower, Resource.whole_rest_upper,
-                        Resource.whole_rest_thresh, '1/1r', 4)
+                        Resource.whole_rest_thresh, 'whole', 4, rest=True)
 
         # Note
 
         match_templates(cropped[i],staff_img, i, quarter_note_imgs, Resource.quarter_note_lower, Resource.quarter_note_upper,
-                        Resource.quarter_note_thresh, '1/4', 1)
+                        Resource.quarter_note_thresh, 'quarter', 1)
 
         match_templates(cropped[i],staff_img, i, half_note_imgs, Resource.half_note_lower, Resource.half_note_upper,
-                        Resource.half_note_thresh, '1/2', 2)
+                        Resource.half_note_thresh, 'half', 2)
 
         match_templates(cropped[i],staff_img, i, whole_note_imgs, Resource.whole_note_lower, Resource.whole_note_upper,
-                        Resource.whole_note_thresh, '1/1', 4)
+                        Resource.whole_note_thresh, 'whole', 4)
 
         # Flag
 
@@ -217,14 +237,17 @@ if __name__ == "__main__":
         sequence = []
 
     for x in sequences:
-        print(f'{x.get_object()} {x.get_duration()} {x.get_pitch()}')
+        print(f'{x.get_object()} {x.get_type()} {x.get_duration()} {x.get_pitch()}')
+
+    make_sequence(sequences)
+
 
 
 
 
     #TODO Stay positive
 
-    #print(sequence)
+    print('\n\n\n Finished.')
 
 
 

@@ -1,9 +1,10 @@
 class MusicObject(object):
-    def __init__(self, obj, duration, box, pitch=-1):
+    def __init__(self, obj, type, duration, box, pitch=-1):
         self.pitch = pitch
         self.duration = duration
         self.obj = obj
         self.box = box
+        self.type = type
 
     def set_pitch(self, pitch):
         self.pitch = pitch
@@ -22,3 +23,6 @@ class MusicObject(object):
 
     def get_box(self):
         return self.box
+
+    def get_type(self):
+        return self.type

@@ -71,27 +71,31 @@ def find_cleff(staff_img, i,clef_imgs, clef_lower, clef_upper, clef_thresh):
                 y = int(boxes.getCorner()[1] + boxes.getHeight() + 10)
                 cv2.putText(staff_img, "{} clef".format(clef), (x, y), cv2.FONT_HERSHEY_DUPLEX, 0.9, (0,255,0))
 
-def make_sequence(sequence=[]):
-    #TODO Fix this
+def make_sequence(sequence):
+    print('making sequence...')
     strm = stream.Stream()
 
-    n = note.Note()
-    r = note.Rest()
     for s in sequence:
-        if s.get_type == 'note':
-            n.duration = s.get_duration()
-            n.pitch = s.get_pitch()
+        # print('extracting values from sequence...')
+        # print(s.get_type())
+        if s.get_type() is 'note':
+            n = note.Note(s.get_pitch())
+            n.quarterLength = s.get_duration()
+            # print(f'adding {s.get_duration()} {s.get_pitch()}')
 
             strm.append(n)
-        elif s.get_type == 'rest':
-            r.duration = s.get_duration()
+        elif s.get_type() is 'rest':
+            r = note.Rest()
+            r.quarterLength = s.get_duration()
+            # print(f'adding {s.get_duration()} {s.get_pitch()}')
             strm.append(r)
 
-    strm.show('text')
+    # strm.show('midi')
+    strm.write('midi', 'output.mid')
 
 if __name__ == "__main__":
 
-    filename = "resources/examples/helloWorld.png"
+    filename = "resources/examples/helloWorld2.png" #input file, should be higher resolution for more accurate reading
     original_image = cv2.imread(filename)
     img1 = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
     f = ic.convertImage(filename)
@@ -182,7 +186,7 @@ if __name__ == "__main__":
 
     for i in range(num_staffs): # find template matches of time, cleff
         staff_img = cropped[i]
-        find_cleff(staff_img,i,clef_imgs,Resource.clef_lower,Resource.clef_upper,Resource.clef_thresh)
+        # find_cleff(staff_img,i,clef_imgs,Resource.clef_lower,Resource.clef_upper,Resource.clef_thresh)
     # Barlines
     # match_templates(staff_img, i, bar_imgs, Resource.bar_lower, Resource.bar_upper,
     # Resource.bar_thresh, 'barline')
@@ -239,6 +243,8 @@ if __name__ == "__main__":
     for x in sequences:
         print(f'{x.get_object()} {x.get_type()} {x.get_duration()} {x.get_pitch()}')
 
+    print(f'len sequence: {len(sequences)}')
+
     make_sequence(sequences)
 
 
@@ -247,7 +253,7 @@ if __name__ == "__main__":
 
     #TODO Stay positive
 
-    print('\n\n\n Finished.')
+    print('\n\n\nFinished.')
 
 
 

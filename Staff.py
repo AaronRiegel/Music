@@ -48,7 +48,7 @@ class Staff(object):
         }
         note_names = ["C", "D", "E", "F", "G", "A", "B"]
 
-        MOE = 2 # Margin of Error
+        MOE = 3 # Margin of Error
 
         if (note_center_y in range(self.line_one - MOE, self.line_one + MOE + 1)):
             return clef_info[self.clef][0][0]

@@ -20,10 +20,10 @@ Implementation was completed in python alone
 
 Current implementation can only detect quarter, half, and whole notes/rests. 
 
-##Input
+## Input
 
 Current implementation has the input value hardcoded
 
-##Output
+## Output
 
 Current implemenetation outputs a midi file called 'output.mid'
